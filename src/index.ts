@@ -23,11 +23,16 @@ const tempCard: string = fs.readFileSync(path.resolve(__dirname, './templates/te
 const tempProduct: string = fs.readFileSync(path.resolve(__dirname, './templates/template-product.html'), 'utf-8')
 const data = fs.readFileSync(path.resolve(__dirname, './dev-data/data.json'), 'utf8')
 const dataObj = JSON.parse(data)
-const server = http.createServer((req: IncomingMessage, res: ServerResponse)=>{
-    const pathName = req.url;
 
+const server = http.createServer((req: IncomingMessage, res: ServerResponse)=>{
+    // const pathName = req.url;
+   
+    // console.log(url.parse(<string>req.url, true).query.id)
+
+    let {query, pathname} = url.parse(<string>req.url, true)
+    
     //OVERVIEW PAGE
-    if(pathName === '/' || pathName === '/overview'){
+    if(pathname === '/' || pathname === '/overview'){
         res.writeHead(200, {'Content-type': 'text/html'});
         const cardsHtml: string = dataObj.map((el: Iproduct) => replaceTemplate(tempCard, el)).join('')
         const output: string = tempOverview.replace('{%PRODUCT_CARDS%}', cardsHtml)
@@ -35,26 +40,19 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse)=>{
     }
 
     //PRODUCT PAGE
-    else if(pathName === '/product'){
-        res.end('PRoduct')
+    else if(pathname === '/product'){
+        // console.log(query)
+        res.writeHead(200, {'Content-type': 'text/html'});
+        const product = dataObj[Number(query.id)]
+        const output = replaceTemplate(tempProduct, product)
+        res.end(output);
     }
 
     //API
-    else if(pathName === '/api'){
+    else if(pathname === '/api'){
         res.writeHead(200, {'Content-type': 'application/json'})
         res.end(data)
-        // fs.readFile(path.resolve(__dirname, './dev-data/data.json'), 'utf8',(err,data)=>{
-        //     if(err){
-        //         res.writeHead(400, {'Content-type': 'text/html'})
-        //         res.end('<h1>Fuck Off </h1>')
-        //     }
-    //         else if(data){
-    //             res.writeHead(200, {'Content-type': 'application/json'})
-    //             const productData = JSON.parse(data);
-    //             console.log(productData)
-    //             res.end(data);
-    //         }
-    //     })
+        
         
     }
     //ERROR HANDLING PAGE
@@ -69,6 +67,19 @@ const server = http.createServer((req: IncomingMessage, res: ServerResponse)=>{
 
 
 
+
+// fs.readFile(path.resolve(__dirname, './dev-data/data.json'), 'utf8',(err,data)=>{
+        //     if(err){
+        //         res.writeHead(400, {'Content-type': 'text/html'})
+        //         res.end('<h1>Fuck Off </h1>')
+        //     }
+    //         else if(data){
+    //             res.writeHead(200, {'Content-type': 'application/json'})
+    //             const productData = JSON.parse(data);
+    //             console.log(productData)
+    //             res.end(data);
+    //         }
+    //     })
 
 
 
